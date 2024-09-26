@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הצגת IP ופרטי מכשיר</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        #ip {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #device {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        #ip-list {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 400px;
+            max-height: 40vh;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        img {
+            width: 300px; /* גודל התמונה */
+            height: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="ip">טוען IP...</div>
+    <div id="device">טוען פרטי מכשיר...</div>
+    <img src="file:///C:/Users/jerem/Downloads/96fd1e89-1d48-429c-bfc3-194107faabd4.jpeg" alt="תמונה">
+    <div id="ip-list">
+        <h3>אייפי ופרטי מכשירים שנכנסו:</h3>
+        <ul id="ip-history"></ul>
+    </div>
+
+    <script>
+        async function getIp() {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+        }
+
+        function saveEntry(ip, deviceInfo) {
+            let entryList = JSON.parse(localStorage.getItem('entryHistory')) || [];
+            const entry = { ip, deviceInfo };
+            entryList.push(entry);
+            localStorage.setItem('entryHistory', JSON.stringify(entryList));
+            return entryList;
+        }
+
+        function displayEntryHistory(entryList) {
+            const ipHistoryElement = document.getElementById('ip-history');
+            ipHistoryElement.innerHTML = ''; // לנקות את הרשימה
+            entryList.forEach(entry => {
+                const li = document.createElement('li');
+                li.textContent = `IP: ${entry.ip}, פרטי מכשיר: ${entry.deviceInfo}`;
+                ipHistoryElement.appendChild(li);
+            });
+        }
+
+        async function displayInfo() {
+            const ip = await getIp();
+            const deviceInfo = `
+                דגם: ${navigator.platform} 
+                דפדפן: ${navigator.userAgent} 
+                גרסה: ${navigator.appVersion}
+            `;
+
+            document.getElementById('ip').innerText = `ה-IP שלך: ${ip}`;
+            document.getElementById('device').innerText = `פרטי המכשיר שלך: ${deviceInfo}`;
+            const entryList = saveEntry(ip, deviceInfo);
+            displayEntryHistory(entryList);
+        }
+
+        displayInfo();
+    </script>
+</body>
+</html>
